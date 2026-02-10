@@ -1,7 +1,7 @@
 // Shot Directive Template (JS/TS class style)
 // 목적: 촬영 지시 → AI 프롬프트(텍스트)로 변환 가능한 구조
 
-import { SHOT_SIZE } from "@/constant";
+import { ASPEC_RATIO, CAMERA_ANGLE, LENS_LOOK, SHOT_SIZE } from "@/constant";
 
 export type Seconds = number;
 
@@ -20,38 +20,46 @@ export const ShotSize = SHOT_SIZE.reduce(
 export type ShotSize = keyof typeof ShotSize;
 
 // 2) Camera Angle (카메라 각도)
-export enum CameraAngle {
-  EyeLevel = "EyeLevel",
-  HighAngle = "HighAngle",
-  LowAngle = "LowAngle",
-  TopDown = "TopDown",
-  BottomUp = "BottomUp",
-  Dutch = "Dutch",
-  Overhead = "Overhead",
-  WormEye = "WormEye",
-  BirdEye = "BirdEye",
-}
+export const CameraAngle = CAMERA_ANGLE.reduce(
+  (acc, { id }) => {
+    acc[id as keyof typeof acc] = id;
+    return acc;
+  },
+  {} as Record<
+    (typeof CAMERA_ANGLE)[number]["id"],
+    (typeof CAMERA_ANGLE)[number]["id"]
+  >,
+);
+
+export type CameraAngle = keyof typeof CameraAngle;
 
 // 3) Camera Orientation (수평/수직/비율)
-export enum AspectRatio {
-  AR_16_9 = "16:9",
-  AR_9_16 = "9:16",
-  AR_1_1 = "1:1",
-  AR_2_39_1 = "2.39:1",
-  AR_4_3 = "4:3",
-}
+export const AspectRatio = ASPEC_RATIO.reduce(
+  (acc, { id }) => {
+    acc[id as keyof typeof acc] = id;
+    return acc;
+  },
+  {} as Record<
+    (typeof ASPEC_RATIO)[number]["id"],
+    (typeof ASPEC_RATIO)[number]["id"]
+  >,
+);
+
+export type AspectRatio = keyof typeof AspectRatio;
 
 // 4) Lens / Focal Length "Look" (렌즈룩 / 화각)
-export enum LensLook {
-  UltraWide_14 = "14mm",
-  Wide_24 = "24mm",
-  Wide_28 = "28mm",
-  Standard_35 = "35mm",
-  Standard_50 = "50mm",
-  Portrait_85 = "85mm",
-  Tele_135 = "135mm",
-  Tele_200 = "200mm",
-}
+export const LensLook = LENS_LOOK.reduce(
+  (acc, { id }) => {
+    acc[id as keyof typeof acc] = id;
+    return acc;
+  },
+  {} as Record<
+    (typeof LENS_LOOK)[number]["id"],
+    (typeof LENS_LOOK)[number]["id"]
+  >,
+);
+
+export type LensLook = keyof typeof LensLook;
 
 // 5) DOF / Aperture 느낌 (f값을 직접 고정하기보다 "룩"으로 지정)
 export enum DepthOfField {
@@ -188,17 +196,15 @@ export interface Constraints {
 export class ShotDirective {
   id: string;
   duration: Seconds;
-
-  aspectRatio: AspectRatio = AspectRatio.AR_16_9;
-
+  aspectRatio: AspectRatio | undefined;
   size: ShotSize;
   angle: CameraAngle;
 
   lens: LensLook;
-  dof: DepthOfField = DepthOfField.Shallow;
-  focus: FocusMode = FocusMode.SubjectFocus;
+  dof: DepthOfField | undefined;
+  focus: FocusMode | undefined;
 
-  move: CameraMove = CameraMove.Static;
+  move: CameraMove | undefined;
   moveSpeed?: "VerySlow" | "Slow" | "Normal" | "Fast";
 
   composition: Composition;

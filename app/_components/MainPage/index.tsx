@@ -16,7 +16,11 @@ import {
   SubjectPlacement,
   TimeOfDay,
 } from "@/Class/allThatShot";
-import { SHOT_SIZE } from "@/constant";
+import { ASPEC_RATIO, CAMERA_ANGLE, LENS_LOOK, SHOT_SIZE } from "@/constant";
+import { useForm } from "react-hook-form";
+import { defaultValues, IData } from "@/types";
+import SelectComp from "@/components/SelectComp";
+import InPutComp from "@/components/InPutComp";
 
 const MainPage = () => {
   const tempEx = new ShotDirective({
@@ -70,12 +74,70 @@ const MainPage = () => {
     ids.add(id);
   }
 
-  console.log(ids);
+  const { handleSubmit, register, reset } = useForm<IData>({
+    defaultValues,
+  });
+
+  const onSubmit = (data: IData) => {
+    console.log(data);
+  };
+
+  const handleReset = () => {
+    reset(defaultValues);
+  };
 
   return (
     <Wrap>
       <div className="inner-cont">
-        <p>{tempEx.toPrompt()}</p>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <InPutComp
+            title={"Scene #"}
+            register={register("id")}
+            type={"text"}
+          />
+
+          <InPutComp
+            title={"duration"}
+            register={register("duration")}
+            type={"number"}
+            unit={"sec"}
+          />
+
+          <SelectComp
+            title={"aspect ratio"}
+            data={ASPEC_RATIO}
+            register={register("aspectRatio")}
+          />
+
+          <SelectComp
+            title={"shot size"}
+            data={SHOT_SIZE}
+            register={register("size")}
+          />
+
+          <SelectComp
+            title={"Camera Angle"}
+            data={CAMERA_ANGLE}
+            register={register("angle")}
+          />
+
+          <SelectComp
+            title={"lens 화각"}
+            data={LENS_LOOK}
+            register={register("lens")}
+          />
+
+          <div className="box-btn">
+            <button type="submit" className="btn submit">
+              Generate
+            </button>
+
+            <button type="button" className="btn reset" onClick={handleReset}>
+              Reset
+            </button>
+          </div>
+        </form>
+        {/* <p>{tempEx.toPrompt()}</p> */}
       </div>
     </Wrap>
   );
