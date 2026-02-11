@@ -1,72 +1,24 @@
 "use client";
 
 import { Wrap } from "@/style";
+
 import {
-  AspectRatio,
-  CameraAngle,
-  CameraMove,
-  ColorTone,
-  DepthOfField,
-  FocusMode,
-  GazeDirection,
-  LensLook,
-  LightingStyle,
-  ShotDirective,
-  ShotSize,
-  SubjectPlacement,
-  TimeOfDay,
-} from "@/Class/allThatShot";
-import { ASPEC_RATIO, CAMERA_ANGLE, LENS_LOOK, SHOT_SIZE } from "@/constant";
-import { useForm } from "react-hook-form";
+  ASPEC_RATIO,
+  CAMERA_ANGLE,
+  GAZE_DIRECTION,
+  LENS_LOOK,
+  SHOT_SIZE,
+  SUBJECT_PLACEMENT,
+} from "@/constant";
+import { useForm, useWatch } from "react-hook-form";
 import { defaultValues, IData } from "@/types";
 import SelectComp from "@/components/SelectComp";
 import InPutComp from "@/components/InPutComp";
+import { mkShotDirect } from "@/lib/utils";
+import { useState } from "react";
 
 const MainPage = () => {
-  const tempEx = new ShotDirective({
-    id: "S03",
-    duration: 6,
-    size: ShotSize.CU,
-    angle: CameraAngle.EyeLevel,
-    lens: LensLook.Portrait_85,
-    dof: DepthOfField.Shallow,
-    focus: FocusMode.EyeFocus,
-    move: CameraMove.PushIn,
-    moveSpeed: "VerySlow",
-    aspectRatio: AspectRatio.AR_16_9,
-    styleGuide:
-      "cinematic painterly illustration, soft film grain, muted colors, 16:9",
-    composition: {
-      placement: SubjectPlacement.RightThird,
-      gaze: GazeDirection.LookingLeft,
-      leadRoom: { direction: "Left", ratio: 0.5 },
-      headRoom: { ratio: 0.08 },
-      notes: "tight framing, minimal headroom, subtle vignette",
-    },
-    lighting: {
-      style: LightingStyle.SoftKey,
-      time: TimeOfDay.Night,
-      tone: ColorTone.Cool,
-      notes: "soft moonlight key from right, gentle rim light",
-    },
-    subject: {
-      subject: "celestial maiden",
-      action: "holds her breath, eyes slightly trembling",
-      emotion: "melancholic, restrained",
-      wardrobe: "simple traditional robe, consistent design",
-    },
-    environment: {
-      location: "blurred indoor room",
-      backgroundNotes: "background stays unchanged, no people in background",
-    },
-    constraints: {
-      strictReference: true,
-      extra: [
-        "do not change facial features across frames",
-        "avoid style drift",
-      ],
-    },
-  });
+  const [prompt, setPrompt] = useState<string>("");
 
   const ids = new Set<string>();
   for (const { id } of SHOT_SIZE) {
@@ -74,58 +26,144 @@ const MainPage = () => {
     ids.add(id);
   }
 
-  const { handleSubmit, register, reset } = useForm<IData>({
+  const { handleSubmit, register, reset, control } = useForm<IData>({
     defaultValues,
   });
+  const leadRoomRatio = useWatch({ control, name: "leadRoomRatio" });
 
   const onSubmit = (data: IData) => {
-    console.log(data);
+    const { prompt } = mkShotDirect(data);
+    console.log(prompt);
+    setPrompt(prompt);
   };
 
   const handleReset = () => {
     reset(defaultValues);
+    setPrompt("");
   };
 
   return (
     <Wrap>
       <div className="inner-cont">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <InPutComp
-            title={"Scene #"}
-            register={register("id")}
-            type={"text"}
-          />
+          <div className="wrap-content">
+            <InPutComp
+              title={"Scene #"}
+              register={register("id")}
+              type={"text"}
+            />
 
-          <InPutComp
-            title={"duration"}
-            register={register("duration")}
-            type={"number"}
-            unit={"sec"}
-          />
+            <InPutComp
+              title={"duration"}
+              register={register("duration")}
+              type={"number"}
+              unit={"sec"}
+            />
 
-          <SelectComp
-            title={"aspect ratio"}
-            data={ASPEC_RATIO}
-            register={register("aspectRatio")}
-          />
+            <SelectComp
+              title={"aspect ratio"}
+              data={ASPEC_RATIO}
+              register={register("aspectRatio")}
+            />
+          </div>
 
-          <SelectComp
-            title={"shot size"}
-            data={SHOT_SIZE}
-            register={register("size")}
-          />
+          <div className="wrap-content">
+            <strong className="text-subject">Camera setting</strong>
 
-          <SelectComp
-            title={"Camera Angle"}
-            data={CAMERA_ANGLE}
-            register={register("angle")}
-          />
+            <div className="box-content">
+              <SelectComp
+                title={"shot size"}
+                data={SHOT_SIZE}
+                register={register("size")}
+              />
 
-          <SelectComp
-            title={"lens 화각"}
-            data={LENS_LOOK}
-            register={register("lens")}
-          />
+              <SelectComp
+                title={"Camera Angle"}
+                data={CAMERA_ANGLE}
+                register={register("angle")}
+              />
+
+              <SelectComp
+                title={"lens 화각"}
+                data={LENS_LOOK}
+                register={register("lens")}
+              />
+            </div>
+          </div>
+
+          <div className="wrap-content">
+            <strong className="text-subject">
+              Composition - 리드룸/헤드룸/배치
+            </strong>
+
+            <div className="box-content">
+              <SelectComp
+                title={"구도"}
+                data={SUBJECT_PLACEMENT}
+                register={register("placement")}
+              />
+
+              <SelectComp
+                title={"시선 방향"}
+                data={GAZE_DIRECTION}
+                register={register("gaze")}
+              />
+
+              <div className="box-input">
+                <span>Lead Room</span>
+
+                <div>
+                  <div>
+                    <span>direction</span>
+                    <ul>
+                      <li>
+                        <label htmlFor="leadRoomLeft">Left</label>
+                        <input
+                          id="leadRoomLeft"
+                          type="radio"
+                          value={"Left"}
+                          {...register("leadRoomDirection")}
+                        />
+                      </li>
+                      <li>
+                        <label htmlFor="leadRoomRight">Right</label>
+                        <input
+                          id="leadRoomRight"
+                          type="radio"
+                          value={"Right"}
+                          {...register("leadRoomDirection")}
+                        />
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span>ratio {leadRoomRatio}</span>
+                    <div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        list="leadRoomRatioRange"
+                        {...register("leadRoomRatio")}
+                      />
+                      <datalist
+                        id="leadRoomRatioRange"
+                        className="list-scenario"
+                      >
+                        {Array.from({ length: 10 }).map((_, index) => (
+                          <option value={`${index / 10}`} key={`${index + 1}`}>
+                            {index / 10}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="box-btn">
             <button type="submit" className="btn submit">
@@ -137,7 +175,7 @@ const MainPage = () => {
             </button>
           </div>
         </form>
-        {/* <p>{tempEx.toPrompt()}</p> */}
+        <p>{prompt}</p>
       </div>
     </Wrap>
   );

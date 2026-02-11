@@ -42,6 +42,27 @@ export const Wrap = styled.div`
       }
     }
   }
+
+  .wrap-content {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f4f4f4;
+
+    & + .wrap-content {
+      margin-top: 16px;
+    }
+
+    .text-subject {
+      display: block;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .box-content {
+      margin-top: 14px;
+    }
+  }
 `;
 
 export const WrapInput = styled.div`

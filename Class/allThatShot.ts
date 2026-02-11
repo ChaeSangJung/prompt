@@ -1,73 +1,37 @@
 // Shot Directive Template (JS/TS class style)
 // 목적: 촬영 지시 → AI 프롬프트(텍스트)로 변환 가능한 구조
 
-import { ASPEC_RATIO, CAMERA_ANGLE, LENS_LOOK, SHOT_SIZE } from "@/constant";
+import { DEPTH_OF_FIELD } from "@/constant";
+import {
+  TAspectRatioId,
+  TCameraAngle,
+  TDepthOfField,
+  TGazeDirection,
+  TLeadRoomDirection,
+  TLensLook,
+  TRatio,
+  TShotSize,
+  TSubjectPlacement,
+} from "@/types";
 
 export type Seconds = number;
 
 // 1) Shot Size / Type (샷 크기 / 종류)
-export const ShotSize = SHOT_SIZE.reduce(
-  (acc, { id }) => {
-    acc[id as keyof typeof acc] = id;
-    return acc;
-  },
-  {} as Record<
-    (typeof SHOT_SIZE)[number]["id"],
-    (typeof SHOT_SIZE)[number]["id"]
-  >,
-);
-
-export type ShotSize = keyof typeof ShotSize;
-
 // 2) Camera Angle (카메라 각도)
-export const CameraAngle = CAMERA_ANGLE.reduce(
-  (acc, { id }) => {
-    acc[id as keyof typeof acc] = id;
-    return acc;
-  },
-  {} as Record<
-    (typeof CAMERA_ANGLE)[number]["id"],
-    (typeof CAMERA_ANGLE)[number]["id"]
-  >,
-);
-
-export type CameraAngle = keyof typeof CameraAngle;
-
 // 3) Camera Orientation (수평/수직/비율)
-export const AspectRatio = ASPEC_RATIO.reduce(
-  (acc, { id }) => {
-    acc[id as keyof typeof acc] = id;
-    return acc;
-  },
-  {} as Record<
-    (typeof ASPEC_RATIO)[number]["id"],
-    (typeof ASPEC_RATIO)[number]["id"]
-  >,
-);
-
-export type AspectRatio = keyof typeof AspectRatio;
-
 // 4) Lens / Focal Length "Look" (렌즈룩 / 화각)
-export const LensLook = LENS_LOOK.reduce(
-  (acc, { id }) => {
-    acc[id as keyof typeof acc] = id;
-    return acc;
-  },
-  {} as Record<
-    (typeof LENS_LOOK)[number]["id"],
-    (typeof LENS_LOOK)[number]["id"]
-  >,
-);
-
-export type LensLook = keyof typeof LensLook;
 
 // 5) DOF / Aperture 느낌 (f값을 직접 고정하기보다 "룩"으로 지정)
-export enum DepthOfField {
-  UltraShallow = "UltraShallow", // f/1.4~2 느낌
-  Shallow = "Shallow", // f/2~2.8 느낌
-  Medium = "Medium", // f/4~5.6 느낌
-  Deep = "Deep", // f/8~11 느낌
-}
+export const DepthOfField = DEPTH_OF_FIELD.reduce(
+  (acc, { id }) => {
+    acc[id as keyof typeof acc] = id;
+    return acc;
+  },
+  {} as Record<
+    (typeof DEPTH_OF_FIELD)[number]["id"],
+    (typeof DEPTH_OF_FIELD)[number]["id"]
+  >,
+);
 
 // 6) Focus & Framing (초점/프레이밍)
 export enum FocusMode {
@@ -99,38 +63,18 @@ export enum CameraMove {
 }
 
 // 8) Composition (구도) - 리드룸/헤드룸/배치
-export enum SubjectPlacement {
-  Center = "Center",
-  LeftThird = "LeftThird",
-  RightThird = "RightThird",
-  GoldenRatioLeft = "GoldenRatioLeft",
-  GoldenRatioRight = "GoldenRatioRight",
-  FrameLeft = "FrameLeft",
-  FrameRight = "FrameRight",
-}
-
 // 시선 방향
-export enum GazeDirection {
-  LookingLeft = "LookingLeft",
-  LookingRight = "LookingRight",
-  LookingUp = "LookingUp",
-  LookingDown = "LookingDown",
-  LookingToCamera = "LookingToCamera",
-  LookingAway = "LookingAway",
-}
-
 // 리드룸/헤드룸: "비율"로 적되, 프롬프트에서는 "negative space"로 변환 가능
-export type Ratio = number; // 0.0 ~ 1.0
 
-export interface Composition {
-  placement: SubjectPlacement;
-  gaze: GazeDirection;
+export interface IComposition {
+  placement: TSubjectPlacement;
+  gaze: TGazeDirection;
   leadRoom?: {
-    direction: "Left" | "Right";
-    ratio: Ratio; // 예: 0.5 = 왼쪽 1/2 비워두기
+    direction: TLeadRoomDirection;
+    ratio: TRatio; // 예: 0.5 = 왼쪽 1/2 비워두기
   };
   headRoom?: {
-    ratio: Ratio; // 예: 0.1 = 머리 위 여백 최소
+    ratio: TRatio; // 예: 0.1 = 머리 위 여백 최소
   };
   horizonLevel?: "Low" | "Center" | "High";
   notes?: string; // "rule of thirds", "symmetry" 등
@@ -196,18 +140,18 @@ export interface Constraints {
 export class ShotDirective {
   id: string;
   duration: Seconds;
-  aspectRatio: AspectRatio | undefined;
-  size: ShotSize;
-  angle: CameraAngle;
+  aspectRatio: TAspectRatioId | undefined;
+  size: TShotSize;
+  angle: TCameraAngle;
 
-  lens: LensLook;
-  dof: DepthOfField | undefined;
+  lens: TLensLook;
+  dof: TDepthOfField | undefined;
   focus: FocusMode | undefined;
 
   move: CameraMove | undefined;
   moveSpeed?: "VerySlow" | "Slow" | "Normal" | "Fast";
 
-  composition: Composition;
+  composition: IComposition;
 
   lighting: {
     style: LightingStyle;
@@ -234,18 +178,18 @@ export class ShotDirective {
   constructor(args: {
     id: string;
     duration: Seconds;
-    size: ShotSize;
-    angle: CameraAngle;
-    lens: LensLook;
-    composition: Composition;
+    size: TShotSize;
+    angle: TCameraAngle;
+    lens: TLensLook;
+    composition: IComposition;
     lighting: ShotDirective["lighting"];
     subject: SubjectAction;
     environment: Environment;
-    dof?: DepthOfField;
+    dof?: TDepthOfField;
     focus?: FocusMode;
     move?: CameraMove;
     moveSpeed?: ShotDirective["moveSpeed"];
-    aspectRatio?: AspectRatio;
+    aspectRatio?: TAspectRatioId;
     styleGuide?: string;
     constraints?: Partial<Constraints>;
   }) {
